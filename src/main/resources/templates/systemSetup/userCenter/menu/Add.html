@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Index</title>
+        <script th:src="@{/js/apiUrl.js}"></script>
+        <script th:src="@{/js/jquery/jquery.min.js}"></script>
+        <script th:src="@{/js/methodHelper.js}"></script>
+        <script th:src="@{/js/common/layuiAdmin.js}"></script>
+        <script th:src="@{/js/common/layuiDtree.js}"></script>
+    </head>
+
+    <body>
+        <div class="layui-fluid">
+            <div class="layui-card">
+                <div class="layui-card-body" style="padding: 15px;">
+                    <form class="layui-form layui-form-pane" action="" lay-filter="formFilter">
+                        <fieldset class="layui-elem-field layui-field-title">
+                            <legend>基本信息</legend>
+                        </fieldset>
+                        <input type="hidden" name="id" placeholder="隐藏框Id">
+
+                        <div class="layui-row layui-col-space10 layui-form-item ">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">上级菜单</label>
+                                <div class="layui-input-block">
+                                    <ul id="menuSelTree" class="dtree" data-id="0"></ul>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">菜单类型</label>
+                                <div class="layui-input-block">
+                                    <label>
+                                        <select name="type" lay-search="" lay-verify="required">
+                                            <option value="0">菜单</option>
+                                            <option value="1">按钮</option>
+                                        </select>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">菜单编号</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="menuCode" placeholder="菜单编号"
+                                           autocomplete="off" class="layui-input" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">菜单名称</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="menuName" placeholder="菜单名称"
+                                           autocomplete="off" class="layui-input" lay-verify="required">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">页面路径</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="href" placeholder="页面路径"
+                                           autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">菜单权限</label>
+                                <div class="layui-input-block">
+                                    <input type="text" name="permission" placeholder="菜单权限"
+                                           autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">菜单图标</label>
+                                <div class="layui-input-block">
+                                    <!--<input type="text" name="icon" placeholder="菜单图标"-->
+                                    <!--autocomplete="off" class="layui-input">-->
+                                    <input type="hidden" class="layui-input" name="icon" id="iconValue"
+                                           placeholder="请选择菜单图标">
+                                    <div class="layui-input-inline" style="width: 100px;">
+                                        <i class="layui-icon" id="realIcon"
+                                           style="font-size: 36px; margin-top: 3px; margin-left: 10px;"></i>
+                                    </div>
+                                    <div class="layui-input-inline" style="width: 100px;">
+                                        <a class="layui-btn layui-btn-normal" id="selectIcon">我来选择一个图标</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">排序值</label>
+                                <div class="layui-input-block">
+                                    <input type="number" name="sort"   value="0" placeholder="请输入排序值"
+                                           autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-row layui-col-space10 layui-form-item " align="center">
+                            <div class="layui-col-xs6" id="btnSubmit">
+                                <button class="layui-btn layui-btn-normal  layui-btn-fluid" lay-submit
+                                        lay-filter="btnSubmit">
+                                    提交
+                                </button>
+                            </div>
+                            <div class="layui-col-xs6" id="btnClose">
+                                <button class="layui-btn layui-btn-danger layui-btn-fluid" type="button"
+                                        onclick="Util.closePage()">
+                                    关闭
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <script th:inline="javascript">
+            layui.config({
+                base: '/layuiadmin/module/dtree/' //配置 layui 第三方扩展组件存放的基础目录
+            }).extend({
+                dtree: 'dtree' //定义该组件模块名
+            }).use(["dtree", "form", "layer"], function () {
+                const dtree = layui.dtree
+                    , form = layui.form
+                    , layer = layui.layer;
+                $.post(apiUrl.menu.getDTreeList, {type: "0"}, function (res) {
+                    if (res.code !== 200) return;
+                    let selectParam = dtree.renderSelect({
+                        elem: "#menuSelTree",
+                        data: res.data,
+                        dataFormat: "list",  //配置data的风格为list
+                        selectInputName: {
+                            nodeId: "parentId"
+                        },
+                        //  select: true,//指定下拉树模式
+                        done: function (res, $ul, first) {
+                            if (!Util.isEmpty([[${entity.parentId}]])) {
+                                dtree.dataInit("menuSelTree", [[${entity.parentId}]]);
+                                // 也可以在这里指定，第二个参数如果不填，则会自动返显当前选中的数据
+                                selectParam = dtree.selectVal("menuSelTree");
+                            }
+                        }
+                    });
+                });
+                $("#selectIcon").on("click", function () {
+                    iconShow = layer.open({
+                        type: 2,
+                        title: '选择图标',
+                        shadeClose: true,
+                        content: apiUrl.menu.iconList
+                    });
+                    layer.full(iconShow);
+                });
+                form.on('submit(btnSubmit)', function (data) {
+                    let loadIndex = layer.load(2);
+                    $.post(apiUrl.menu.save, data.field, function (res) {
+                        if (res.code === 200) {
+                            //获取当前页面关闭，关闭form弹框
+                            let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                            parent.layer.close(index); //再执行本页面关闭
+                            parent.layer.msg("操作成功", {icon: 6, time: 1000});
+                        } else {
+                            parent.layer.msg(res.message, {icon: 5, time: 1000}, function () {
+                                layer.close(loadIndex);
+                            });
+                        }
+                    });
+                    return false;
+                });
+            });
+        </script>
+    </body>
+</html>

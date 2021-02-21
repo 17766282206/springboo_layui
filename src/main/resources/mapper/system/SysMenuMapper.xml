@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cxwmpt.demo.dao.system.SysMenuMapper">
+    <resultMap id="BaseResultMap" type="com.cxwmpt.demo.model.system.SysMenu">
+        <!--@Table sys_menu-->
+        <id column="id" jdbcType="VARCHAR" property="id"/>
+        <result column="parent_id" jdbcType="VARCHAR" property="parentId"/>
+        <result column="menu_name" jdbcType="VARCHAR" property="menuName"/>
+        <result column="menu_code" jdbcType="VARCHAR" property="menuCode"/>
+        <result column="icon" jdbcType="VARCHAR" property="icon"/>
+        <result column="href" jdbcType="VARCHAR" property="href"/>
+        <result column="type" jdbcType="VARCHAR" property="type"/>
+        <result column="permission" jdbcType="VARCHAR" property="permission"/>
+        <result column="sort" jdbcType="INTEGER" property="sort"/>
+        <result column="remark" jdbcType="VARCHAR" property="remark"/>
+
+        <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
+        <result column="create_id" jdbcType="VARCHAR" property="createId" />
+        <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
+        <result column="update_id" jdbcType="VARCHAR" property="updateId" />
+        <result column="del_flag" jdbcType="INTEGER" property="delFlag" />
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, parent_id, menu_name, menu_code, icon, href, `type`, permission, sort,
+     remark,create_id, update_date, update_id, del_flag
+  </sql>
+    <sql id="dTree_columns">
+     id          as `id`,
+     parent_id     as `parentId`,
+     menu_name      as `title`,
+     '0'    as `checkArr`,
+     ''      as `iconClass`
+  </sql>
+    <sql id="getListByLoginInfo_columns">
+     id          as `id`,
+     parent_id     as `parentId`,
+     menu_name      as `menuName`,
+     menu_code      as `menuCode`,
+     icon      as `icon`,
+     href      as `href`,
+     `type`      as `type`,
+     permission   as `permission`
+  </sql>
+
+    <select id="getDTreeList" resultType="java.util.Map">
+        SELECT
+        <include refid="dTree_columns"/>
+        FROM sys_menu where 1 = 1 and del_flag=false
+        order by sort asc ,create_date desc
+    </select>
+
+    <select id="getByIDSelectSubNode" resultType="java.lang.String">
+           SELECT id FROM (
+              SELECT t1.*,
+              IF(FIND_IN_SET(parent_id, @pids) > 0, @pids := CONCAT(@pids, ',', id), 0) AS ischild
+              FROM (
+                   SELECT * FROM sys_menu where del_flag=false
+                  ) t1,
+                  (SELECT @pids := #{id})t2
+		  ) t3 WHERE ischild != '0'
+    </select>
+
+
+
+    <select id="getListByLoginInfo" resultType="com.cxwmpt.demo.common.vo.Node">
+        SELECT
+        <include refid="getListByLoginInfo_columns"/>
+        FROM sys_menu where id in(SELECT  sys_menu.id from(SELECT sys_role_menu.menu_id from (SELECT sys_user_role.role_id from (SELECT id FROM sys_user where id=#{id} and del_flag=false )sys_user
+        LEFT JOIN (SELECT sys_user_role.* from sys_user_role right JOIN (SELECT * from sys_role where  status="0" and   del_flag=false )sys_role on sys_role.id=sys_user_role.role_id   where    sys_user_role.del_flag=false )sys_user_role  on sys_user_role.user_id= sys_user.id)sys
+        LEFT JOIN (SELECT * FROM sys_role_menu where del_flag=false)sys_role_menu  on sys_role_menu.role_id=sys.role_id  group by sys_role_menu.menu_id)sys
+        LEFT JOIN (select * FROM sys_menu where del_flag=false)sys_menu on sys_menu.id=sys.menu_id)
+        and type='0' and del_flag=false
+        order by sort asc ,create_date desc
+    </select>
+
+
+    <select id="getListById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_menu
+        <where>
+            1 = 1 and  del_flag=false
+            <if test='map.id!=""&amp;&amp; map.id!=null'>
+                and id IN (SELECT id FROM (
+                SELECT t1.*,
+                IF(FIND_IN_SET(parent_id, @pids) > 0, @pids := CONCAT(@pids, ',', id), 0) AS ischild
+                FROM (
+                SELECT * FROM sys_menu where del_flag=false
+                ) t1,
+                (SELECT @pids := #{map.id})t2
+                ) t3 WHERE ischild != '0') or id = #{map.id}
+            </if>
+        </where>
+        order by sort asc ,create_date desc
+    </select>
+</mapper>

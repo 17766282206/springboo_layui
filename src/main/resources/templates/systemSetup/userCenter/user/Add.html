@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.springframework.org/schema/jdbc">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script th:src="@{/js/apiUrl.js}"></script>
+    <script th:src="@{/js/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/methodHelper.js}"></script>
+    <script th:src="@{/js/common/layuiAdmin.js}"></script>
+    <script th:src="@{/js/common/layuiDtree.js}"></script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="" lay-filter="formFilter">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>基本信息</legend>
+                </fieldset>
+                <input type="hidden" name="id" placeholder="隐藏框Id">
+                <div class="layui-row layui-col-space10 layui-form-item ">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">登录帐号<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="account" lay-verify="required" placeholder="请输入登录帐号"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">密码<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <input type="password" name="password" lay-verify="required" placeholder="请输入密码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">用户姓名<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="username" lay-verify="required" placeholder="请输入用户姓名"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">性别<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <select name="sex" lay-search="" lay-verify="required">
+                                <option value="0">未知</option>
+                                <option value="1">男</option>
+                                <option value="2">女</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">用户状态<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <select name="status" lay-search="" lay-verify="required">
+                                <option value="1">正常</option>
+                                <option value="2">停用</option>
+                                <option value="3">锁定</option>
+                            </select>
+                        </div>
+                    </div>
+<!--                    <div class="layui-inline">-->
+<!--                        <label class="layui-form-label">所属部门</label>-->
+<!--                        <div class="layui-input-inline">-->
+<!--                            <ul id="companySelTree" class="dtree" data-id="0"></ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="layui-inline">
+                        <label class="layui-form-label">联系电话</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="mobile" lay-verify="phone" placeholder="请输入联系电话"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">QQ号码</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="qq" placeholder="请输入QQ号码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">微信号码</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="wechat" placeholder="请输入微信号码"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">电子邮件</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="email" placeholder="请输入电子邮件"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">身份证号</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="userNo" placeholder="请输入身份证号"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">联系地址</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="address" placeholder="请输入联系地址"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text" id="roleIdsCheckbox">
+
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">备注</label>
+                    <div class="layui-input-block">
+                        <textarea name="remark" placeholder="请输入备注" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-row layui-col-space10 layui-form-item " align="center">
+                    <div class="layui-col-xs6"  id="btnSubmit">
+                        <button class="layui-btn layui-btn-normal  layui-btn-fluid" lay-submit
+                                lay-filter="btnSubmit">
+                            提交
+                        </button>
+                    </div>
+                    <div class="layui-col-xs6" id="btnClose">
+                        <button class="layui-btn layui-btn-danger layui-btn-fluid" type="button"
+                                onclick=" Util.closePage()">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+
+
+    layui.config({
+        base: '/layuiadmin/module/dtree/' //配置 layui 第三方扩展组件存放的基础目录
+    }).extend({
+        dtree: 'dtree' //定义该组件模块名
+    }).use(["dtree", "form", "layer"], function () {
+        const dtree = layui.dtree,
+              form = layui.form,
+            layer = layui.layer;
+
+        $.post(apiUrl.role.AllList, function (res) {
+            console.log(res)
+            if (res.code !== 200) return;
+            let html = " <label class=\"layui-form-label\">角色</label><div class=\"layui-input-block\">";
+            for (let i in res.data) {
+                html += "<input type=\"checkbox\" name=\"roleId\" value=\"" + res.data[i].id + "\" lay-skin=\"primary\" title=\"" + res.data[i].roleName + "\" >";
+            }
+            html += "</div>";
+            $("#roleIdsCheckbox").html(html);
+            form.render('checkbox');
+        });
+        //监听保存按钮
+        form.on('submit(btnSubmit)', function (data) {
+            let loadIndex = layer.load(2);
+            //获取checkbox[name='like']的值
+            let ArrayIds = [];
+            $("input:checkbox[name='roleId']:checked").each(function (i) {
+                ArrayIds[i] = this.value;
+            });
+            $.post(apiUrl.user.save,{form:JSON.stringify(data.field),ArrayIds:JSON.stringify(ArrayIds)}, function (res) {
+                if (res.code === 200) {
+                    //获取当前页面关闭，关闭form弹框
+                    let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index); //再执行本页面关闭
+                    parent.layer.msg("操作成功", {icon: 6, time: 1000});
+                } else {
+                    parent.layer.msg(res.message, {icon: 5, time: 1000}, function () {
+                        layer.close(loadIndex);
+                    });
+                }
+            });
+            //取消提交按钮事件
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

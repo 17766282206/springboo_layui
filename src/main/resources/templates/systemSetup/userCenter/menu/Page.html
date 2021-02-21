@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+    <head>
+        <meta charset="utf-8">
+        <title>菜单管理</title>
+        <script th:src="@{/js/apiUrl.js}"></script>
+        <script th:src="@{/js/jquery/jquery.min.js}"></script>
+        <script th:src="@{/js/methodHelper.js}"></script>
+        <script th:src="@{/js/common/layuiAdmin.js}"></script>
+        <script th:src="@{/js/common/layuiDtree.js}"></script>
+    </head>
+    <body>
+
+        <div class="layui-fluid">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md3">
+                    <div class="layui-card">
+                        <div class="layui-card-header">
+                            菜单树
+                        </div>
+                        <ul id="dTreeMenu" class="dtree" data-id="0"></ul>
+                    </div>
+
+                </div>
+                <div class="layui-col-md9">
+                    <div class="layui-card">
+                        <div class="layui-card-header">
+                            菜单列表
+                        </div>
+                        <div class="layui-card-body nepadmin-table-full">
+                            <script type="text/html" id="addBar">
+                                <div class="layui-btn-container">
+                                    <shiro:hasPermission name="sys:menu:add">
+                                        <button class="layui-btn layui-btn-sm" lay-event="add">
+                                            <i class='layui-icon layui-icon-add-circle'></i>新增
+                                        </button>
+                                    </shiro:hasPermission>
+                                    <shiro:hasPermission name="sys:menu:edit">
+                                        <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="edit">
+                                            <i class='layui-icon layui-icon-edit'></i>修改
+                                        </button>
+                                    </shiro:hasPermission>
+                                    <shiro:hasPermission name="sys:menu:del">
+                                        <button permission="sys:user:delete" class="layui-btn layui-btn-sm layui-btn-danger"
+                                                lay-event="del">
+                                            <i class='layui-icon layui-icon-delete'></i>删除
+                                        </button>
+                                    </shiro:hasPermission>
+                                    <button class="layui-btn layui-btn-sm layui-bg-orange" lay-event="details">
+                                        <i class='layui-icon layui-icon-read'></i>详情
+                                    </button>
+                                    <button class="layui-btn layui-btn-sm layui-btn-primary" lay-event="refresh">
+                                        <i class='layui-icon layui-icon-refresh'></i>刷新
+                                    </button>
+                                </div>
+                            </script>
+                            <table id="dataTable" lay-filter="dataTable"></table> <!--数据表格-->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            layui.config({
+                base: '/layuiadmin/module/dtree/' //配置 layui 第三方扩展组件存放的基础目录
+            }).extend({
+                dtree: 'dtree' //定义该组件模块名
+            }).use(["table", "dtree", "form", "layer"], function () {
+                const table = layui.table,
+                    dtree = layui.dtree
+                    , form = layui.form
+                    , layer = layui.layer;
+
+                let selectNodeId = "";
+
+                reloadTable(null);
+                function reloadTable(data) {
+                    if(data==null){
+                        selectNodeId = "";
+                    }
+                    $.post(apiUrl.menu.getDTreeList, {type: "0"}, function (res) {
+                        if (res.code !== 200) return;
+                        dtree.render({
+                            elem: "#dTreeMenu",
+                            data: res.data,
+                            dataFormat: "list",  //配置data的风格为list
+                            checkbar: false //开启复选框
+                        });
+                    });
+                    table.render({
+                        elem: '#dataTable',//唯一ID
+                        id: 'dataList',//数据表格的id
+                        toolbar: '#addBar',//头部操作栏id
+                        size: 0,//表格大小
+                        url: apiUrl.menu.getListById,
+                        method: 'post',
+                        page: true, //开启分页
+                        limits: [10, 20, 30],
+                        limit: 10, //每页默认显示的数量
+                        height: 'full-75', //高度最大化减去差值
+                        where: data,
+                        parseData: function (res) {
+                            //console.log(res)
+                            //res 即为原始返回的数据
+                            return {
+                                "code": 0, //解析接口状态
+                                "msg": 0, //解析提示文本
+                                "count": res.data.total, //解析数据长度
+                                "data": res.data.list //解析数据列表
+                            };
+                        },
+                        cols: [
+                            [ //表头
+                                {type: 'checkbox', fixed: 'left'},
+                                {unresize: true, fixed: 'left', title: '序号', type: 'numbers', width: 70},
+                                {field: 'id', title: 'ID', width: 70, sort: true, fixed: 'left', hide: true},
+                                {field: 'menuCode', title: '菜单编号', width: 120, sort: true, fixed: 'left'},
+                                {field: 'menuName', title: '菜单名称', width: 160},
+                                {field: 'href', title: '连接地址', width: 160},
+                                {field: 'permission', title: '权限标识', width: 160},
+                                {field: 'sort', title: '排序', width: 120},
+                                {
+                                    field: 'type', title: '类型', width: 120, templet: function (val) {
+                                        switch (val.type) {
+                                            case "0":
+                                                return "<span class='layui-badge'>菜单</span>";
+                                            case "1":
+                                                return "<span class='layui-badge'>按钮</span>";
+                                            default:
+                                            case "3":
+                                                return "<span class='layui-badge'>未知</span>";
+                                        }
+                                    }
+                                },
+                                {field: 'remark', title: '备注', width: 250},
+                                {field: 'createDate', title: '创建时间', sort: true, width: 170},
+                                {field: 'updateDate', title: '修改时间', sort: true, width: 170},
+                            ]
+                        ]
+                    });
+                }
+                // 点击节点名称获取选中节点值
+                dtree.on("node('dTreeMenu')", function (obj) {
+                    selectNodeId = obj.param.nodeId;
+                    reloadTable({"id": selectNodeId});
+                    //   layer.msg(JSON.stringify(obj.param));
+                });
+                //监听表格头部工具
+                table.on('toolbar(dataTable)', function (obj) {
+                    //获取选中数据
+                    let checkStatus = table.checkStatus('dataList')//数据表加载后的Id
+                        , data = checkStatus.data;
+                    let arr = [];
+                    switch (obj.event) {
+                        case 'add'://添加
+                            layer.open({
+                                type: 2,//1是div 2是html
+                                title: '新增信息',
+                                content: apiUrl.menu.addPage + '?parentId=' + selectNodeId,
+                                shade: [0.9, '#393D49'],
+                                area: ['100%', '100%'],
+                                closeBtn: 1,//不显示则closeBtn: 0
+                                shadeClose: false,//点击弹层外区域关闭弹框
+                                // time: 300000,//默认关闭毫秒数
+                                //anim: 2,//弹出动画
+                                // , maxmin: true//最大小化按钮
+                                fixed: true,//固定在可视区域
+                                end: function () {//销毁此页面回调
+                                    //调用此方法重载table
+                                    reloadTable({"id": selectNodeId});
+                                },
+                            });
+                            break;
+                        case 'edit'://修改
+                            if (data.length === 0) {
+                                layer.alert('必须选择一条数据', {icon: 2});
+                            } else if (data.length > 1) {
+                                layer.alert('只能选择一条数据进行编辑', {icon: 2});
+                            } else {
+                                arr[0] = data[0].id;
+                                layer.open({
+                                    type: 2,
+                                    title: '修改管理员信息',
+                                    content: apiUrl.menu.updatePage + '?action=edit&id=' + arr[0],
+                                    area: ['100%', '100%'],
+                                    // , offset: '10px'
+                                    closeBtn: 1,//不显示则closeBtn: 0
+                                    shade: [0.9, '#393D49'],
+                                    // , shadeClose: true//点击弹层外区域关闭弹框
+                                    // time: 300000 ,//默认关闭毫秒数
+                                    //anim: 2  ,//弹出动画
+                                    // , maxmin: true//最大小化按钮
+                                    fix: false,//固定在可视区域
+                                    end: function () {//销毁此页面回调
+                                        reloadTable({"id": selectNodeId});
+                                    },
+                                });
+                            }
+                            break;
+                        case 'del'://删除
+                            if (data.length === 0) {
+                                layer.msg("对不起，您没有选择数据，请勾选数据", {icon: 5});
+
+                            } else {
+                                for (let i = 0; i < data.length; i++) //删除数据得到合同编号
+                                {
+                                    arr[i] = data[i].id;
+                                }
+                                layer.confirm('您确定要删除条菜单包括他的子菜单吗？', function (index) {
+                                    let loadIndex = layer.load(2);
+                                    $.post(apiUrl.menu.deletes, {ids: arr}, function (res) {
+                                        if (res.code === 200) {
+                                            layer.msg("操作成功", {icon: 6});
+                                            layer.close(loadIndex);
+                                            reloadTable({"id": selectNodeId});
+                                        } else {
+                                            layer.msg(res.message, {icon: 5});
+                                            layer.close(loadIndex);
+                                        }
+                                    });
+                                });
+                            }
+                            break;
+                        case 'details'://详情
+                            layer.open({
+                                type: 2,
+                                title: '查看详情',
+                                content: apiUrl.menu.updatePage + '?action=details&id=' + obj.data.id,
+                                skin: 'layui-layer-molv',
+                                area: ['750px', '550px'],
+                                closeBtn: 1,//不显示则closeBtn: 0
+                                shade: [0.9, '#393D49'],
+                                shadeClose: true,//点击弹层外区域关闭弹框
+                                //time: 300000, //默认关闭毫秒数
+                                // , maxmin: true//最大小化按钮
+                                fixed: true,//固定在可视区域
+                            });
+                            break;
+                        default:
+                        case 'refresh'://刷新
+                            reloadTable(null);
+                            break;
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

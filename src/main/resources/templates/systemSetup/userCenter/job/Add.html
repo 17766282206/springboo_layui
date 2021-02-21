@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>Index</title>
+    <script th:src="@{/js/apiUrl.js}"></script>
+    <script th:src="@{/js/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/methodHelper.js}"></script>
+    <script th:src="@{/js/common/layuiAdmin.js}"></script>
+    <script th:src="@{/js/common/layuiDtree.js}"></script>
+
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="" lay-filter="formFilter">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>基本信息</legend>
+                </fieldset>
+
+                <div class="layui-row layui-form-item ">
+                    <label class="layui-form-label">触发器名<span style="color: #FF5722">*</span></label>
+                    <div class="layui-input-block">
+                        <input type="text" lay-verify="required" lay-reqtext="请输入触发器名！" name="jobName" autocomplete="off" placeholder="请输入触发器名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-row layui-form-item ">
+                    <label class="layui-form-label">触发器组名<span style="color: #FF5722">*</span></label>
+                    <div class="layui-input-block">
+                        <input type="text" lay-verify="required" lay-reqtext="请输入触发器组名！" name="jobGroup" autocomplete="off" placeholder="请输入触发器组名" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-row layui-form-item ">
+                    <label class="layui-form-label">cron表达式<span style="color: #FF5722">*</span></label>
+                    <div class="layui-input-block">
+                        <input type="text" lay-verify="required" lay-reqtext="请输入cron表达式！" name="cronExpression" autocomplete="off" placeholder="请输入cron表达式" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-row layui-form-item ">
+                    <label class="layui-form-label">执行类名<span style="color: #FF5722">*</span></label>
+                    <div class="layui-input-block">
+                        <input type="text" lay-verify="required" lay-reqtext="请输入执行类名！" name="jobClass" autocomplete="off" placeholder="请输入标题" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-row layui-col-space10 layui-form-item " align="center">
+                    <div class="layui-col-xs6" id="btnSubmit">
+                        <button class="layui-btn layui-btn-normal  layui-btn-fluid" lay-submit
+                                lay-filter="btnSubmit">
+                            提交
+                        </button>
+                    </div>
+                    <div class="layui-col-xs6" id="btnClose">
+                        <button class="layui-btn layui-btn-danger layui-btn-fluid" type="button"
+                                onclick=" Util.closePage()">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    layui.use(["form", 'layer', 'laydate', 'upload'], function () {
+        const form = layui.form,
+            layer = layui.layer;
+
+
+        //监听保存按钮
+        form.on('submit(btnSubmit)', function (data) {
+
+            let loadIndex = layer.load(2);
+            $.post(apiUrl.job.save, data.field, function (res) {
+                if (res.code === 200) {
+                    //获取当前页面关闭，关闭form弹框
+                    let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index); //再执行本页面关闭
+                    parent.layer.msg("操作成功", {icon: 6, time: 1000});
+                } else {
+                    parent.layer.msg(res.message, {icon: 5, time: 1000}, function () {
+                        layer.close(loadIndex);
+                    });
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script th:src="@{/js/apiUrl.js}"></script>
+    <script th:src="@{/js/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/methodHelper.js}"></script>
+    <script th:src="@{/js/common/layuiAdmin.js}"></script>
+    <script th:src="@{/js/common/layuiDtree.js}"></script>
+
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <form class="layui-form layui-form-pane" action="" lay-filter="formFilter">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>基本信息</legend>
+                </fieldset>
+                <div class="layui-row layui-col-space10 layui-form-item ">
+                    <div class="layui-inline">
+                        <label class="layui-form-label">字典编号<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="code" lay-verify="required" placeholder="请输入字典编号"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">字典名称<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="name" lay-verify="required" placeholder="请输入字典名称"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label">状态<span style="color: #FF5722">*</span></label>
+                        <div class="layui-input-inline">
+                            <select id="status" name="status" lay-search="">
+                                <option value="0" selected>正常</option>
+                                <option value="1">禁用</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">排序值</label>
+                        <div class="layui-input-inline">
+                            <input type="number" name="sort"   value="0" placeholder="请输入排序值"
+                                   autocomplete="off" class="layui-input">
+                        </div>
+                    </div>
+                    <div class="layui-form-item layui-form-text">
+                        <label class="layui-form-label">备注</label>
+                        <div class="layui-input-block">
+                            <textarea name="remark" placeholder="请输入备注" class="layui-textarea"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="layui-row layui-col-space10 layui-form-item " align="center">
+                    <div class="layui-col-xs6" id="btnSubmit">
+                        <button class="layui-btn layui-btn-normal  layui-btn-fluid" lay-submit
+                                lay-filter="btnSubmit">
+                            提交
+                        </button>
+                    </div>
+                    <div class="layui-col-xs6" id="btnClose">
+                        <button class="layui-btn layui-btn-danger layui-btn-fluid" type="button"
+                                onclick=" Util.closePage()">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+    layui.use(["form", 'layer'], function () {
+        const form = layui.form,
+            layer = layui.layer;
+
+
+        //监听保存按钮
+        form.on('submit(btnSubmit)', function (data) {
+
+            let loadIndex = layer.load(2);
+            $.post(apiUrl.dict.save, data.field, function (res) {
+                if (res.code === 200) {
+                    //获取当前页面关闭，关闭form弹框
+                    let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index); //再执行本页面关闭
+                    parent.layer.msg("操作成功", {icon: 6, time: 1000});
+                } else {
+                    parent.layer.msg(res.message, {icon: 5, time: 1000}, function () {
+                        layer.close(loadIndex);
+                    });
+                }
+            });
+            return false;
+        });
+
+    });
+
+
+</script>
+
+</body>
+</html>

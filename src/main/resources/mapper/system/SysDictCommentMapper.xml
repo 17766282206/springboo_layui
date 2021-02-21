@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cxwmpt.demo.dao.system.SysDictCommentMapper">
+  <resultMap id="BaseResultMap" type="com.cxwmpt.demo.model.system.SysDictComment">
+    <!--@Table sys_dict_index-->
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="dict_code" jdbcType="VARCHAR" property="dictCode" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="sort" jdbcType="INTEGER" property="sort"/>
+    <result column="remark" jdbcType="VARCHAR" property="remark" />
+    <result column="create_date" jdbcType="TIMESTAMP" property="createDate" />
+    <result column="create_id" jdbcType="VARCHAR" property="createId" />
+    <result column="update_date" jdbcType="TIMESTAMP" property="updateDate" />
+    <result column="update_id" jdbcType="VARCHAR" property="updateId" />
+    <result column="del_flag" jdbcType="INTEGER" property="delFlag" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, dict_code, code, `name`,sort,  remark, create_date, create_id, update_date, update_id, del_flag
+  </sql>
+
+  <select id="getAllList" resultMap="BaseResultMap">
+
+    select
+    <include refid="Base_Column_List"/>
+    from sys_dict_comment
+    <where>
+      1=1 and del_flag=false
+      <choose>
+        <when test='map.selectDictId!=""&amp;&amp; map.selectDictId!=null'>
+          and dict_code in (select code from  sys_dict where id=#{map.selectDictId})
+        </when>
+        <otherwise>
+          and 1=0
+        </otherwise>
+      </choose>
+    </where>
+    order by sort asc , create_date desc
+  </select>
+</mapper>

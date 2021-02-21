@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.springframework.org/schema/jdbc">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    <script th:src="@{/js/apiUrl.js}"></script>
+    <script th:src="@{/js/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/methodHelper.js}"></script>
+    <script th:src="@{/js/common/layuiAdmin.js}"></script>
+    <script th:src="@{/js/common/layuiDtree.js}"></script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 15px;">
+            <table width="100%">
+                <tr>
+                    <td valign="top" align="center">
+                        <h3><b>基本信息</b></h3>
+                        <hr>
+                        <form class="layui-form layui-form-pane" action="" lay-filter="formFilter">
+                            <input type="hidden" name="id" placeholder="隐藏框Id">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">角色名称<span style="color: #FF5722">*</span></label>
+                                <div class="layui-input-inline">
+                                    <input type="text" name="roleName" lay-verify="required" placeholder="请输入角色名称"
+                                           autocomplete="off" class="layui-input">
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">状态<span style="color: #FF5722">*</span></label>
+                                <div class="layui-input-inline">
+                                    <select name="status" lay-search="">
+                                        <option value="1">启用</option>
+                                        <option value="2">禁用</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item layui-form-text">
+                                <label class="layui-form-label">备注</label>
+                                <div class="layui-input-block">
+                                    <textarea name="remark" placeholder="请输入备注" class="layui-textarea"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="layui-row layui-col-space10 layui-form-item " align="center">
+                                <div class="layui-col-xs6" id="btnSubmit">
+                                    <button class="layui-btn layui-btn-normal  layui-btn-fluid" lay-submit
+                                            lay-filter="btnSubmit">
+                                        提交
+                                    </button>
+                                </div>
+                                <div class="layui-col-xs6" id="btnClose">
+                                    <button class="layui-btn layui-btn-danger layui-btn-fluid" type="button"
+                                            onclick=" Util.closePage()">
+                                        关闭
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </td>
+                    <td valign="top" align="center">
+                        <h3><b>系统权限</b></h3>
+                        <hr>
+                        <ul id="authorityTree" class="dtree" data-id="0"></ul>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+
+    layui.config({
+        base: '/layuiadmin/module/dtree/' //配置 layui 第三方扩展组件存放的基础目录
+    }).extend({
+        dtree: 'dtree' //定义该组件模块名
+    }).use(["dtree", "form", "layer"], function () {
+        const dtree = layui.dtree
+            , form = layui.form
+            , layer = layui.layer;
+        $.post(apiUrl.menu.getDTreeList,function (res) {
+            if (res.code !== 200) return;
+            dtree.render({
+                elem: "#authorityTree",  //绑定元素
+                data: res.data,
+                dataFormat: "list",  //配置data的风格为list
+                initLevel: 1,
+                checkbar: true, //开启复选框
+                ficon: ["1", "-1"], // 隐藏一级图标
+                line: true,  // 显示树线
+                checkbarType: "p-casc",//单项级联
+            });
+        });
+
+
+        //监听保存按钮
+        form.on('submit(btnSubmit)', function (data) {
+            let dataChecked1 = dtree.getCheckbarNodesParam("authorityTree");
+            if (dataChecked1.length < 1) {
+                layer.msg("系统权限不能为空", {icon: 5});
+                return false;
+            }
+            let ArrayIds = [];
+            //获取所有选中节点的id
+            for (let i = 0; i < dataChecked1.length; i++) {
+                ArrayIds.push(dataChecked1[i].nodeId);
+            }
+            let loadIndex = layer.load(2);
+            $.post( apiUrl.role.save,{form:JSON.stringify(data.field),ArrayIds:JSON.stringify(ArrayIds)},function (res) {
+                if (res.code === 200) {
+                    //获取当前页面关闭，关闭form弹框
+                    let index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                    parent.layer.close(index); //再执行本页面关闭
+                    parent.layer.msg("操作成功", {icon: 6,time: 1000});
+                } else {
+                    parent.layer.msg(res.message, {icon: 5,time: 1000}, function () {
+                        layer.close(loadIndex);
+                    });
+                }
+            });
+
+            //取消提交按钮事件
+            return false;
+        });
+    });
+</script>
+
+</body>
+</html>

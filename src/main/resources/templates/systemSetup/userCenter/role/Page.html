@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>角色管理</title>
+    <script th:src="@{/js/apiUrl.js}"></script>
+    <script th:src="@{/js/jquery/jquery.min.js}"></script>
+    <script th:src="@{/js/methodHelper.js}"></script>
+    <script th:src="@{/js/common/layuiAdmin.js}"></script>
+</head>
+<body>
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md10">
+            <div class="layui-card">
+                <div class="layui-card-header">
+                    角色
+                </div>
+                <div class="layui-card-body nepadmin-table-full">
+                    <script type="text/html" id="addBar">  <!--数据表格上方操作框-->
+                    <div class="layui-btn-container">
+                        <shiro:hasPermission name="sys:role:add">
+                            <button class="layui-btn layui-btn-sm" lay-event="add">
+                                <i class='layui-icon layui-icon-add-circle'></i>新增
+                            </button>
+                        </shiro:hasPermission>
+                        <shiro:hasPermission name="sys:role:edit">
+                            <button class="layui-btn layui-btn-sm layui-btn-normal" lay-event="edit">
+                                <i class='layui-icon layui-icon-edit'></i>修改
+                            </button>
+                        </shiro:hasPermission>
+                        <shiro:hasPermission name="sys:role:del">
+                            <button permission="sys:user:delete" class="layui-btn layui-btn-sm layui-btn-danger"
+                                    lay-event="del">
+                                <i class='layui-icon layui-icon-delete'></i>删除
+                            </button>
+                        </shiro:hasPermission>
+                        <button class="layui-btn layui-btn-sm layui-bg-orange" lay-event="details">
+                            <i class='layui-icon layui-icon-read'></i>详情
+                        </button>
+
+                        <button class="layui-btn layui-btn-sm layui-btn-primary" lay-event="refresh">
+                            <i class='layui-icon layui-icon-refresh'></i>刷新
+                        </button>
+                    </div>
+                    </script>
+                    <table id="dataTable" lay-filter="dataTable"></table> <!--数据表格-->
+
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-col-md2">
+            <div class="layui-card">
+                <div class="layui-card-header">筛选数据</div>
+                <div class="layui-card-body" style="padding: 10px 15px">
+                    <form class="layui-form">
+                        <div class="layui-row layui-col-space10">
+                            <div class="layui-col-md12 layui-col-xs4">
+                                <input class="layui-input" type="text" name="roleName" placeholder="请输入角色名称">
+                            </div>
+                            <div class="layui-col-md12 layui-col-xs4">
+                                <input class="layui-input" type="text" name="remark" placeholder="请输入备注">
+                            </div>
+                            <div class="layui-col-md12 layui-col-xs12">
+                                <div class="layui-row layui-col-space10">
+                                    <div class="layui-col-xs6">
+                                        <button class="layui-btn layui-btn-sm layui-btn-fluid  btnSubmit" lay-submit
+                                                lay-filter="btnSubmit">
+                                            筛选
+                                        </button>
+                                    </div>
+                                    <div class="layui-col-xs6">
+                                        <button class="layui-btn layui-btn-sm layui-btn-fluid layui-btn-primary"
+                                                type="reset">重置
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+    layui.use(["table", "form", "layer"], function () {
+        const table = layui.table,
+            form = layui.form,
+            layer = layui.layer;
+        reloadTable(null);
+        function reloadTable(data) {
+            table.render({
+                elem: '#dataTable',//唯一ID
+                id: 'dataList',//数据表格的id
+                toolbar: '#addBar',//头部操作栏id
+                size: 0,//表格大小
+                url: apiUrl.role.pageList,
+                method: 'post',
+                page: true, //开启分页
+                limits: [10, 20, 30],
+                limit: 10, //每页默认显示的数量
+                height: 'full-75', //高度最大化减去差值
+                where: data,
+                parseData: function (res) {
+                    //console.log(res)
+                    //res 即为原始返回的数据
+                    return {
+                        "code": 0, //解析接口状态
+                        "msg": 0, //解析提示文本
+                        "count": res.count, //解析数据长度
+                        "data": res.data //解析数据列表
+                    };
+                },
+                cols: [
+                    [ //表头
+                        {type: 'checkbox', fixed: 'left'},
+                        {unresize: true, fixed: 'left', title: '序号', type: 'numbers', width: 70},
+                        {field: 'id', title: 'ID', width: 70, sort: true, fixed: 'left', hide: true},
+                        {field: 'roleName', title: '角色名'},
+                        {field: 'statusText', title: '状态', width: 120},
+                        {field: 'remark', title: '备注'},
+                        {field: 'createDate', title: '创建时间'},
+                        {field: 'updateDate', title: '修改时间'},
+                    ]
+                ]
+            });
+        }
+
+
+        //监听查询提交
+        form.on('submit(btnSubmit)', function (data) {
+            reloadTable(data.field);
+            return false;
+        });
+
+        //监听表格头部工具
+        table.on('toolbar(dataTable)', function (obj) {
+            //获取选中数据
+            let checkStatus = table.checkStatus('dataList')//数据表加载后的Id
+                , data = checkStatus.data;
+            let arr = [];
+            switch (obj.event) {
+                case 'add'://添加
+                    layer.open({
+                        type: 2,//1是div 2是html
+                        title: '新增信息',
+                        content: apiUrl.role.addPage,
+                        skin: 'layui-layer-molv',
+                        area: ['950px', '550px'],
+                        closeBtn: 1,//不显示则closeBtn: 0
+                        shade: [0.9, '#393D49'],
+                        shadeClose: false,//点击弹层外区域关闭弹框
+                        //time: 300000  ,//默认关闭毫秒数
+                        // , maxmin: true//最大小化按钮
+                        fixed: true,//固定在可视区域
+                        end: function () {//销毁此页面回调
+                            //调用此方法重载table
+                            reloadTable(null);
+                        },
+                    });
+                    break;
+                case 'edit'://修改
+                    if (data.length === 0) {
+                        layer.alert('必须选择一条数据', {icon: 2});
+                    } else if (data.length > 1) {
+                        layer.alert('只能选择一条数据进行编辑', {icon: 2});
+                    } else {
+                        arr[0] = data[0].id;
+                        layer.open({
+                            type: 2,
+                            title: '修改信息',
+                            content: apiUrl.role.updatePage + '?action=edit&id=' +  arr[0],
+                            skin: 'layui-layer-molv',
+                            area: ['950px', '550px'],
+                            closeBtn: 1,//不显示则closeBtn: 0
+                            shade: [0.9, '#393D49'],
+                            shadeClose: false,//点击弹层外区域关闭弹框
+                            //time: 300000, //默认关闭毫秒数
+                            // , maxmin: true//最大小化按钮
+                            fixed: true,//固定在可视区域
+                            end: function () {//销毁此页面回调
+                                //调用此方法重载table
+                                reloadTable(null);
+                            },
+                        });
+                    }
+                    break;
+                case 'del'://删除
+                    if (data.length === 0) {
+                        layer.msg("对不起，您没有选择数据，请勾选数据", {icon: 5});
+
+                    } else {
+                        for (let i = 0; i < data.length; i++) //删除数据得到合同编号
+                        {
+                            arr[i] = data[i].id;
+                        }
+                        layer.confirm('您确定要删除这些数据吗？', function (index) {
+                            let loadIndex = layer.load(2);
+                            $.post(apiUrl.role.deletes, {ids: arr}, function (res) {
+                                if (res.code === 200) {
+                                    layer.msg("操作成功", {icon: 6});
+                                    layer.close(loadIndex);
+                                    reloadTable();
+                                } else {
+                                    layer.msg(res.message, {icon: 5});
+                                    layer.close(loadIndex);
+                                }
+                            });
+                        });
+                    }
+                    break;
+                case 'details'://详情
+                    if (data.length === 0) {
+                        layer.alert('必须选择一条数据', {icon: 2});
+                    } else if (data.length > 1) {
+                        layer.alert('只能选择一条数据进行编辑', {icon: 2});
+                    } else {
+                        arr[0] = data[0].id;
+                        layer.open({
+                            type: 2,
+                            title: '查看详情信息',
+                            content: apiUrl.role.updatePage + '?action=details&id=' + arr[0],
+                            skin: 'layui-layer-molv',
+                            area: ['950px', '550px'],
+                            closeBtn: 1,//不显示则closeBtn: 0
+                            shade: [0.9, '#393D49'],
+                            shadeClose: true,//点击弹层外区域关闭弹框
+                            //time: 300000, //默认关闭毫秒数
+                            // , maxmin: true//最大小化按钮
+                            fixed: true,//固定在可视区域
+                        });
+                    }
+                    break;
+                case 'refresh'://刷新
+                    reloadTable(null);
+                    break;
+                default:
+            }
+        });
+    });
+</script>
+</body>
+</html>

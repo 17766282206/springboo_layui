@@ -1,0 +1,36 @@
+
+#打印sql
+#logging:
+#  level:
+#   com.nuotadi.wms.dao : debug
+spring:
+  #选中生产环境
+  profiles:
+    active: dev
+  #访问的静态资源
+  resources:
+    #,classpath:/templates/ 取消这个路径页面访问
+    static-locations: classpath:/static/,classpath:/templates/
+  #后台返回的页面路径
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false #关闭缓存及时刷新,项目成功发部可为true
+    mode: LEGACYHTML5
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+#  通用配置
+# pageHelper分页配置
+pagehelper:
+ helper-dialect: mysql
+ reasonable: true
+ support-methods-arguments: true
+ params: count=countSql
+# 配置文件数据库账户加密key
+jasypt:
+  encryptor:
+    password: panther
+
+
+

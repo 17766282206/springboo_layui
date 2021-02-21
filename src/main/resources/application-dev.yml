@@ -1,0 +1,72 @@
+
+#本地数据库配置
+spring:
+  datasource:
+    # 配置阿里巴巴数据源类型
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://127.0.0.1:3306/db_demo_githup?userSSL=false&useUnicode=true&characterEncoding=utf8&allowMultiQueries=true&autoReconnect=true&serverTimezone=GMT%2B8
+    username: root
+    password: system
+    # 初始化，最小，最大连接数
+    initialSize: 3
+    minidle: 3
+    maxActive: 18
+    # 获取数据库连接等待的超时时间
+    maxWait: 60000
+    # 配置多久进行一次检测，检测需要关闭的空闲连接 单位毫秒
+    timeBetweenEvictionRunsMillis: 60000
+    validationQuery: SELECT 1 FROM dual
+   # 配置监控统计拦截的filters,去掉后，监控界面的sql无法统计
+    filters: stat,wall,log4j
+    dbcp2:
+      validation-query: SELECT 1
+      time-between-eviction-runs-millis: 18800
+    #连接数据库断开
+    hikari:
+      minimum-idle: 3
+      maximum-pool-size: 10
+      max-lifetime: 30000
+      connection-test-query: SELECT 1
+    quartz:
+      #相关属性配置
+      properties:
+        org:
+          quartz:
+            scheduler:
+              instanceName: clusteredScheduler
+              instanceId: AUTO
+            jobStore:
+              class: org.quartz.impl.jdbcjobstore.JobStoreTX
+              driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+              tablePrefix: QRTZ_
+              #集群设置
+              isClustered: true
+              clusterCheckinInterval: 10000
+              useProperties: true
+            threadPool:
+              class: org.quartz.simpl.SimpleThreadPool
+              threadCount: 10
+              threadPriority: 5
+              #设置守护线程  默认为true
+              threadsInheritContextClassLoaderOfInitializingThread: true
+      #数据库方式
+      job-store-type: jdbc
+##需引入jar包
+mybatis-plus:
+  #当mybatis的xml文件和mapper接口不在相同包下时，需要用mapperLocations属性指定xml文件的路径。
+  #      *是个通配符，代表所有的文件，**代表所有目录下
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.cxwmpt.demo.model
+  global-config:
+    id-type: 2  #0:数据库ID自增   1:用户输入id  2:全局唯一id(IdWorker)  3:全局唯一ID(uuid)
+    db-column-underline: false
+    refresh-mapper: true
+  configuration:
+    map-underscore-to-camel-case: false
+    cache-enabled: true #配置的缓存的全局开关
+    lazyLoadingEnabled: true #延时加载的开关
+    multipleResultSetsEnabled: true #开启的话，延时加载一个属性时会加载该对象全部属性，否则按需加载属性
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #打印sql语句,调试用
+server:
+  port: 8080
+
